@@ -3,12 +3,10 @@
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  // 로그인 상태
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
 
-  // 고객 관리 상태
   const [customers, setCustomers] = useState([]);
   const [form, setForm] = useState({
     name: "",
@@ -23,7 +21,6 @@ export default function Home() {
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn");
     if (loggedIn === "true") setIsLoggedIn(true);
-
     const stored = localStorage.getItem("customers");
     if (stored) setCustomers(JSON.parse(stored));
   }, []);
@@ -32,7 +29,6 @@ export default function Home() {
     localStorage.setItem("customers", JSON.stringify(data));
   };
 
-  // 로그인/로그아웃
   const handleLogin = () => {
     if (usernameInput === "csw123" && passwordInput === "csw123") {
       localStorage.setItem("isLoggedIn", "true");
@@ -48,13 +44,15 @@ export default function Home() {
     setIsLoggedIn(false);
   };
 
-  // 고객 등록
   const handleChange = (key, value) => {
     setForm({ ...form, [key]: value });
   };
 
   const handleAddCustomer = () => {
-    if (!form.name) return;
+    if (!form.name || !form.deliveryExpectedDate) {
+      alert("이름과 전달 예상일은 필수입니다.");
+      return;
+    }
     const updated = [...customers, { ...form, id: Date.now(), isEditing: false }];
     setCustomers(updated);
     saveToStorage(updated);
@@ -103,7 +101,6 @@ export default function Home() {
       c.gifts.toLowerCase().includes(search.toLowerCase())
   );
 
-  // 로그인 화면
   if (!isLoggedIn) {
     return (
       <div style={{ maxWidth: 400, margin: "50px auto" }}>
@@ -131,7 +128,6 @@ export default function Home() {
     )
   }
 
-  // 고객 관리 화면
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
       <button onClick={handleLogout} style={{ marginBottom: 20 }}>로그아웃</button>
@@ -165,9 +161,9 @@ export default function Home() {
           onChange={e => handleChange("method", e.target.value)}
           style={{ width: "100%", padding: 8, marginBottom: 5 }}
         />
+        <div style={{ fontSize: 12, color: "#555", marginBottom: 2 }}>선택: 물품 수령 예상일 (입력하지 않아도 등록 가능)</div>
         <input
           type="date"
-          placeholder="물품 수령 예상일"
           value={form.giftExpectedDate}
           onChange={e => handleChange("giftExpectedDate", e.target.value)}
           style={{ width: "100%", padding: 8, marginBottom: 5 }}
@@ -178,9 +174,9 @@ export default function Home() {
           onChange={e => handleChange("region", e.target.value)}
           style={{ width: "100%", padding: 8, marginBottom: 5 }}
         />
+        <div style={{ fontSize: 12, color: "#555", marginBottom: 2 }}>필수: 전달 예상일</div>
         <input
           type="date"
-          placeholder="전달 예상일"
           value={form.deliveryExpectedDate}
           onChange={e => handleChange("deliveryExpectedDate", e.target.value)}
           style={{ width: "100%", padding: 8, marginBottom: 5 }}
@@ -213,6 +209,7 @@ export default function Home() {
                   onChange={e => handleEditChange(c.id, "method", e.target.value)}
                   style={{ width: "100%", marginBottom: 5 }}
                 />
+                <div style={{ fontSize: 12, color: "#555", marginBottom: 2 }}>선택: 물품 수령 예상일</div>
                 <input
                   type="date"
                   value={c.giftExpectedDate}
@@ -224,6 +221,7 @@ export default function Home() {
                   onChange={e => handleEditChange(c.id, "region", e.target.value)}
                   style={{ width: "100%", marginBottom: 5 }}
                 />
+                <div style={{ fontSize: 12, color: "#555", marginBottom: 2 }}>필수: 전달 예상일</div>
                 <input
                   type="date"
                   value={c.deliveryExpectedDate}
@@ -238,7 +236,7 @@ export default function Home() {
                 <p><strong>이름:</strong> {c.name}</p>
                 <p><strong>선물:</strong> {c.gifts}</p>
                 <p><strong>수령 방식:</strong> {c.method}</p>
-                <p><strong>물품 수령 예상일:</strong> {c.giftExpectedDate}</p>
+                <p><strong>물품 수령 예상일:</strong> {c.giftExpectedDate || "입력 없음"}</p>
                 <p><strong>지역:</strong> {c.region}</p>
                 <p><strong>전달 예상일:</strong> {c.deliveryExpectedDate}</p>
                 <button onClick={() => toggleEdit(c.id)} style={{ marginRight: 5 }}>수정</button>
